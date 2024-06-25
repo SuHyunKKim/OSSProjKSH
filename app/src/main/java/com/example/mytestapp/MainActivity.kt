@@ -4,7 +4,6 @@ import com.example.mytestapp.mypage.MyPageFragment
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.fragment.app.Fragment
-import com.example.mytestapp.chat.ChatHistoryFragment
 import com.example.mytestapp.databinding.ActivityMainBinding
 import com.example.mytestapp.match.MatchingFragment
 
@@ -49,7 +48,7 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_chat -> {
-                    replaceFragment(ChatHistoryFragment())
+                    replaceFragment(MatchingFragment())
                     true
                 }
                 R.id.nav_mypage -> {

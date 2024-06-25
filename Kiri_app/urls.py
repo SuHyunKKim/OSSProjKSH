@@ -4,6 +4,7 @@ from rest_framework import routers, permissions
 from . import views #views.py import
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from Kiri_app import routing
 from .views import ChatRoomListViewSet, ChatViewSet, UserViewSet
 
 #API 명세서 자동 생성 drf-yasg
@@ -65,7 +66,6 @@ if settings.DEBUG:
         path('getchathistory/', views.ChatRoomListViewSet.getchathistory, name='getchathistory'),
 
         path('savemessage/', views.ChatViewSet.savemessage, name='savemessage'),
-        path('getchathistory/', views.ChatViewSet.getchathistory, name='getchathistory'),
 
 
         # KSH: ProfileViewSet 추가
@@ -88,5 +88,14 @@ if settings.DEBUG:
         # KSH: BlockViewSet 추가
         path('blockuser/', views.BlockViewSet.blockuser, name='blockuser'),
         path('getblocklist/', views.BlockViewSet.getblocklist, name='getblocklist'),
+
+        # path('ws', include('Kiri_app.routing'))
+        # path('ws', include(routing.websocket_urlpatterns))
     ]
 
+from django.urls import re_path
+from Kiri_app import routing as chat_routing
+
+websocket_urlpatterns = chat_routing.websocket_urlpatterns
+
+urlpatterns += websocket_urlpatterns

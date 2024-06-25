@@ -158,9 +158,9 @@
         app:layout_constraintTop_toBottomOf="@+id/namecard"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="50dp"/>
+        android:layout_marginTop="100dp"/>
 
-    <!--차단목록 관리 버튼-->
+    <!--차단목록 관리 버튼
     <Button
         android:id="@+id/blockListButton"
         android:layout_width="match_parent"
@@ -173,7 +173,7 @@
         app:layout_constraintTop_toBottomOf="@id/editProfileButton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="20dp"/>
+        android:layout_marginTop="20dp"/>-->
 
     <!--로그아웃 버튼-->
     <Button
@@ -185,7 +185,7 @@
         android:textSize="16sp"
         android:textColor="@color/error"
         android:background="@drawable/edittext_stroke_gray"
-        app:layout_constraintTop_toBottomOf="@id/blockListButton"
+        app:layout_constraintTop_toBottomOf="@id/editProfileButton"
         android:layout_marginTop="20dp"/>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView

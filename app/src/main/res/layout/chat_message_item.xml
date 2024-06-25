@@ -1,11 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    >
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
         <variable
             name="chatMessage"
-            type="com.example.mytestapp.model.request.ChatMessage" />
+            type="com.example.mytestapp.model.response.ChatMessage" />
     </data>
 
     <LinearLayout
@@ -14,7 +14,7 @@
         android:orientation="vertical"
         android:padding="8dp">
 
-        <!-- Received Message Layout -->
+        <!-- 받은 메시지 -->
         <LinearLayout
             android:id="@+id/layout_received_message"
             android:layout_width="match_parent"
@@ -40,7 +40,7 @@
                     android:id="@+id/chat_nickname"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@{chatMessage.senderName}"
+                    android:text="@{chatMessage.senderID}"
                     android:fontFamily="@font/pretendard"
                     android:textAlignment="textStart"
                     android:textColor="@color/text_main"
@@ -62,20 +62,10 @@
                         android:textSize="14sp"
                         android:textColor="@color/text_main" />
                 </FrameLayout>
-
-                <TextView
-                    android:id="@+id/chat_time"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@{chatMessage.formattedTimestamp}"
-                    android:fontFamily="@font/pretendard"
-                    android:textSize="11sp"
-                    android:textColor="@color/black"
-                    android:layout_gravity="start" />
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Sent Message Layout -->
+        <!-- 보낸 메시지 -->
         <LinearLayout
             android:id="@+id/layout_sent_message"
             android:layout_width="match_parent"
@@ -108,17 +98,6 @@
                         android:textColor="@color/text_white"
                         android:textSize="14sp" />
                 </FrameLayout>
-
-                <TextView
-                    android:id="@+id/my_chat_time"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@{chatMessage.formattedTimestamp}"
-                    android:fontFamily="@font/pretendard"
-                    android:gravity="end"
-                    android:textSize="11sp"
-                    android:textColor="@color/black"
-                    android:layout_gravity="end" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

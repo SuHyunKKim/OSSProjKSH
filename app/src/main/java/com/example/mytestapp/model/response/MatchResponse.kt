@@ -6,7 +6,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class MatchResponse(
     @SerialName("success")
-    val success: Boolean,
-    @SerialName("message")
-    val message: String
+    val success: Boolean
 )

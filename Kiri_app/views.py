@@ -29,6 +29,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+from django.db.models import Q
+
+# from django.contrib.auth import authenticate
+
+
 class UserViewSet(viewsets.ModelViewSet):
     queryset = AppUser.objects.all()
     serializer_class = UserSerializer
@@ -81,7 +86,7 @@ class UserViewSet(viewsets.ModelViewSet):
         else:
             return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
 
-    @api_view(['POST'])
+    @api_view(['GET'])
     def get_user_id(request):
         # 세션에서 사용자 ID 가져오기
         user_id = request.session.get('user_id')
@@ -90,6 +95,7 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response({'user_id': user_id}, status=status.HTTP_200_OK)
         else:
             return Response({'success': False}, status=status.HTTP_404_NOT_FOUND)
+
 
     # KSH : 로그아웃 기능 구현 예정
     @api_view(['POST'])
@@ -107,15 +113,14 @@ class ChatRoomListViewSet(viewsets.ModelViewSet):
 
     @api_view(['POST'])
     def chatroomcreate(request):
+        logger.warning(f"Received data: {request.data}")
+
         userID = request.data.get('userID')
         userID2 = request.data.get('userID2')
 
-        userID = AppUser.objects.get(iD = userID)
-        userID2 = AppUser.objects.get(iD = userID2)
-
         try:
             user1 = AppUser.objects.get(iD=userID)
-            user2 = AppUser.objects.get(iD=userID2)
+            user2 = AppUser.objects.get(userID=userID2)
         except AppUser.DoesNotExist:
             return Response({'success': False, 'error': 'One or both users do not exist'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -123,7 +128,8 @@ class ChatRoomListViewSet(viewsets.ModelViewSet):
             chatroom = ChatRoom.objects.get(
                 Q(userID=user1, userID2=user2) | Q(userID=user2, userID2=user1)
             )
-            return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
+            serialized_chatroom = ChatRoomSerializer(chatroom)
+            return Response({'success': True, 'chatRoom': serialized_chatroom.data}, status=status.HTTP_200_OK)
 
         except ChatRoom.DoesNotExist:
             room_count = ChatRoom.objects.count() + 1
@@ -133,20 +139,30 @@ class ChatRoomListViewSet(viewsets.ModelViewSet):
                 userID2=user2
             )
             chatroom.save()
-            return Response({'success': True}, status=status.HTTP_201_CREATED)
+            serialized_chatroom = ChatRoomSerializer(chatroom)
+            return Response({'success': True, 'chatRoom': serialized_chatroom.data}, status=status.HTTP_201_CREATED)
 
     @api_view(['GET'])
     def getchathistory(request):
-        userID = request.data.get('userID')
-        userID2 = request.data.get('userID2')
+        userID = request.query_params.get('userID')
+        userID2 = request.query_params.get('userID2')
 
-        userID = AppUser.objects.get(iD = userID)
-        userID2 = AppUser.objects.get(iD = userID2)
+        if not userID or not userID2:
+            return Response({"error": "Missing userID or userID2 parameter"}, status=status.HTTP_400_BAD_REQUEST)
 
-        chats = Chat.objects.filter(Q(senderID=userID, receiverID=userID2)
-                                    | Q(senderID=userID2, receiverID=userID)).order_by('timestamp')
+        try:
+            user1 = AppUser.objects.get(iD=userID)
+            user2 = AppUser.objects.get(userID=userID2)
+        except AppUser.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        return Response(ChatSerializer(chats, many=True).data, status=status.HTTP_200_OK)
+        chats = Chat.objects.filter(
+            Q(senderID=user1, receiverID=user2) | Q(senderID=user2, receiverID=user1)
+        ).order_by('timestamp')
+
+        serialized_chats = ChatSerializer(chats, many=True).data
+        print(serialized_chats)
+        return Response({"chatMessages": serialized_chats}, status=status.HTTP_200_OK)
 
     @api_view(['GET'])
     def chatroomlist(request):
@@ -198,19 +214,6 @@ class ChatViewSet(viewsets.ModelViewSet):
                             status=status.HTTP_201_CREATED)
         else:
             return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
-
-    @api_view(['GET'])
-    def getchathistory(request):
-        CHistoryID = request.data.get('CHistoryID')
-        if CHistoryID is None:
-            return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            chat_history = Chat.objects.filter(CHistoryID = CHistoryID).order_by('timestamp')
-            serializer = ChatSerializer(chat_history, many=True)
-            return Response(serializer.data)
-        except Chat.DoesNotExist:
-            return Response({'success': False}, status=status.HTTP_404_NOT_FOUND)
 
 
 
@@ -629,63 +632,75 @@ class MatchViewSet(viewsets.ModelViewSet):
     @api_view(['POST'])
     def matchrequest(request):
         userId = request.data.get('userId')
-        Muser = ChatRoom.objects.get(user1=userId)
-        MuserId = Muser.user2
+        userId2 = request.data.get('userId2')
 
         try:
-            match_result = Match.objects.get(userId=userId)
-            match_result.matchStatus = 'matching'
+            user1 = AppUser.objects.get(iD=userId)
+            user2 = AppUser.objects.get(userID=userId2)
 
-            Mmatch_result = Match.objects.get(userId=MuserId)
-            Mmatch_result.matchStatus = 'matching'
+            user1.matchStatus = 'matching'
+            user2.matchStatus = 'matching'
 
-            match_result.save()
-            Mmatch_result.save()
+            user1.save()
+            user2.save()
 
             return Response({'success': True}, status=status.HTTP_200_OK)
-        except Match.DoesNotExist:
+        except AppUser.DoesNotExist:
             return Response({'success': False}, status=status.HTTP_404_NOT_FOUND)
+
+
+        # Muser = ChatRoom.objects.get(user1=userId)
+        # MuserId = Muser.user2
+        #
+        # try:
+        #     match_result = Match.objects.get(userId=userId)
+        #     match_result.matchStatus = 'matching'
+        #
+        #     Mmatch_result = Match.objects.get(userId=MuserId)
+        #     Mmatch_result.matchStatus = 'matching'
+        #
+        #     match_result.save()
+        #     Mmatch_result.save()
 
     # KSH : 매칭 수락 기능 추가
     @api_view(['POST'])
     def matchaccept(request):
         userId = request.data.get('userId')
-        Muser = ChatRoom.objects.get(user1=userId)
-        MuserId = Muser.user2
+        userId2 = request.data.get('userId2')
 
         try:
-            match_result = Match.objects.get(userId=userId)
-            match_result.matchStatus = 'accepted'
+            user1 = AppUser.objects.get(iD=userId)
+            user2 = AppUser.objects.get(userID=userId2)
 
-            Mmatch_result = Match.objects.get(userId=MuserId)
-            Mmatch_result.matchStatus = 'accepted'
+            user1.matchStatus = 'accepted'
+            user2.matchStatus = 'accepted'
 
-            match_result.save()
-            Mmatch_result.save()
+            user1.save()
+            user2.save()
 
             return Response({'success': True}, status=status.HTTP_200_OK)
-        except Match.DoesNotExist:
+        except AppUser.DoesNotExist:
             return Response({'success': False}, status=status.HTTP_404_NOT_FOUND)
+
 
     # KSH : 매칭 거절 기능 추가
     @api_view(['POST'])
     def matchreject(request):
         userId = request.data.get('userId')
-        Muser = ChatRoom.objects.get(user1=userId)
-        MuserId = Muser.user2
+        userId2 = request.data.get('userId2')
 
         try:
-            match_result = Match.objects.get(userId=userId)
-            match_result.matchStatus = 'pending'
+            user1 = AppUser.objects.get(iD=userId)
+            user2 = AppUser.objects.get(userID=userId2)
 
-            Mmatch_result = Match.objects.get(userId=MuserId)
-            Mmatch_result.matchStatus = 'pending'
+            user1.matchStatus = 'pending'
+            user2.matchStatus = 'pending'
 
-            match_result.save()
-            Mmatch_result.save()
+            user1.save()
+            user2.save()
 
             return Response({'success': True}, status=status.HTTP_200_OK)
-        except Match.DoesNotExist:
+        except AppUser.DoesNotExist:
             return Response({'success': False}, status=status.HTTP_404_NOT_FOUND)
 
 

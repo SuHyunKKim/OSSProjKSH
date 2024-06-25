@@ -13,7 +13,6 @@ import com.example.mytestapp.viewmodel.MatchingViewModel
 import com.example.mytestapp.adapter.MatchingAdapter
 import androidx.fragment.app.FragmentTransaction
 import com.example.mytestapp.HomeFragment
-import com.example.mytestapp.chat.ChatHistoryFragment
 import com.example.mytestapp.mypage.MyPageFragment
 import com.example.mytestapp.R
 
@@ -71,7 +70,7 @@ class MatchingFragment : Fragment() {
 
                 R.id.nav_chat -> {
                     // 채팅 히스토리 프래그먼트로 전환
-                    replaceFragment(ChatHistoryFragment())
+                    replaceFragment(MatchingFragment())
                     true
                 }
 

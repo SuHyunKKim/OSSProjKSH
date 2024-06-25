@@ -5,7 +5,7 @@
     <data>
         <variable
             name="chatMessage"
-            type="com.example.mytestapp.model.request.ChatMessage" />
+            type="com.example.mytestapp.model.response.ChatMessage" />
     </data>
 
     <LinearLayout
@@ -58,113 +58,5 @@
                 </LinearLayout>
             </LinearLayout>
         </FrameLayout>
-
-        <!-- Sent Message Layout -->
-        <LinearLayout
-            android:id="@+id/layoutSentMessage"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="end"
-            android:visibility="gone">
-
-            <LinearLayout
-                android:id="@+id/chat_send"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <FrameLayout
-                    android:id="@+id/sent_chat_text_background"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/chatbox_sent"
-                    android:layout_gravity="end"
-                    android:layout_marginEnd="7dp">
-
-                    <TextView
-                        android:id="@+id/my_chat_msg"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@{chatMessage.content}"
-                        android:fontFamily="@font/pretendard"
-                        android:padding="10dp"
-                        android:textColor="@color/text_white"
-                        android:textSize="14sp" />
-                </FrameLayout>
-
-                <TextView
-                    android:id="@+id/my_chat_time"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@{chatMessage.formattedTimestamp}"
-                    android:fontFamily="@font/pretendard"
-                    android:gravity="end"
-                    android:textSize="11sp"
-                    android:textColor="@color/black"
-                    android:layout_gravity="end" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <!-- Received Message Layout -->
-        <LinearLayout
-            android:id="@+id/layoutReceivedMessage"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:visibility="gone">
-
-            <ImageView
-                android:id="@+id/chat_image"
-                android:layout_width="45dp"
-                android:layout_height="45dp"
-                app:srcCompat="@drawable/button_rec_blu" />
-
-            <LinearLayout
-                android:id="@+id/chat_receive"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="5dp"
-                android:layout_marginEnd="20dp"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/chat_nickname"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@{chatMessage.senderName}"
-                    android:fontFamily="@font/pretendard"
-                    android:textAlignment="textStart"
-                    android:textColor="@color/text_main"
-                    android:textSize="12sp" />
-
-                <FrameLayout
-                    android:id="@+id/received_chat_text_background"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/chatbox_reception">
-
-                    <TextView
-                        android:id="@+id/chat_msg"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@{chatMessage.content}"
-                        android:fontFamily="@font/pretendard"
-                        android:padding="10dp"
-                        android:textSize="14sp"
-                        android:textColor="@color/text_main" />
-                </FrameLayout>
-
-                <TextView
-                    android:id="@+id/chat_time"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@{chatMessage.formattedTimestamp}"
-                    android:fontFamily="@font/pretendard"
-                    android:textSize="11sp"
-                    android:textColor="@color/black"
-                    android:layout_gravity="start" />
-            </LinearLayout>
-        </LinearLayout>
     </LinearLayout>
 </layout>

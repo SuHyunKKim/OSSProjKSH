@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mytestapp.databinding.ChatMessageItemBinding
 import com.example.mytestapp.databinding.ChatMessageItemMatchRequestBinding
-import com.example.mytestapp.model.request.ChatMessage
+import com.example.mytestapp.model.response.ChatMessage
 
 class ChatAdapter(
     private val currentUserId: String,
@@ -20,75 +20,71 @@ class ChatAdapter(
         private const val VIEW_TYPE_MATCH_REQUEST = 2
     }
 
-    fun submitList(newMessages: List<ChatMessage>) {
-        messages = newMessages
-        notifyDataSetChanged()
+    // 채팅 메시지를 위한 뷰홀더 클래스
+    inner class ChatViewHolder(private val binding: ChatMessageItemBinding) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(message: ChatMessage) {
+            binding.chatMessage = message
+            binding.executePendingBindings()
+
+            if (message.senderID == currentUserId) {
+                binding.layoutSentMessage.visibility = View.VISIBLE
+                binding.layoutReceivedMessage.visibility = View.GONE
+            } else {
+                binding.layoutReceivedMessage.visibility = View.VISIBLE
+                binding.layoutSentMessage.visibility = View.GONE
+            }
+        }
     }
 
+    // 매칭 요청 메시지를 위한 뷰홀더 클래스
+    inner class MatchRequestViewHolder(private val binding: ChatMessageItemMatchRequestBinding) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(message: ChatMessage) {
+            binding.executePendingBindings()
+
+            binding.acceptButton.setOnClickListener { onAcceptClick(message) }
+            binding.rejectButton.setOnClickListener { onRejectClick(message) }
+        }
+    }
+
+    // 각 메시지의 뷰 타입을 반환하는 함수
     override fun getItemViewType(position: Int): Int {
-        return if (messages[position].content.contains("매칭을 수락하시겠습니까?")) {
+        return if (messages[position].isMatchRequest) {
             VIEW_TYPE_MATCH_REQUEST
         } else {
             VIEW_TYPE_MESSAGE
         }
     }
 
+    // 뷰홀더를 생성하는 함수
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return if (viewType == VIEW_TYPE_MATCH_REQUEST) {
-            val binding = ChatMessageItemMatchRequestBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-            MatchRequestViewHolder(binding)
-        } else {
-            val binding = ChatMessageItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-            MessageViewHolder(binding)
+        val layoutInflater = LayoutInflater.from(parent.context)
+        return when (viewType) {
+            VIEW_TYPE_MATCH_REQUEST -> {
+                val binding = ChatMessageItemMatchRequestBinding.inflate(layoutInflater, parent, false)
+                MatchRequestViewHolder(binding)
+            }
+            VIEW_TYPE_MESSAGE -> {
+                val binding = ChatMessageItemBinding.inflate(layoutInflater, parent, false)
+                ChatViewHolder(binding)
+            }
+            else -> throw IllegalArgumentException("Invalid view type")
         }
     }
 
+    // 뷰홀더에 데이터를 바인딩하는 함수
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        val message = messages[position]
-        if (holder is MatchRequestViewHolder) {
-            holder.bind(message, currentUserId, onAcceptClick, onRejectClick)
-        } else if (holder is MessageViewHolder) {
-            holder.bind(message, currentUserId)
+        when (holder.itemViewType) {
+            VIEW_TYPE_MATCH_REQUEST -> (holder as MatchRequestViewHolder).bind(messages[position])
+            VIEW_TYPE_MESSAGE -> (holder as ChatViewHolder).bind(messages[position])
         }
     }
 
+    // 아이템의 총 개수를 반환하는 함수
     override fun getItemCount(): Int = messages.size
 
-    class MessageViewHolder(private val binding: ChatMessageItemBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(chatMessage: ChatMessage, currentUserId: String) {
-            binding.chatMessage = chatMessage
-
-            if (chatMessage.senderId == currentUserId) {
-                binding.layoutSentMessage.visibility = View.VISIBLE
-                binding.layoutReceivedMessage.visibility = View.GONE
-            } else {
-                binding.layoutSentMessage.visibility = View.GONE
-                binding.layoutReceivedMessage.visibility = View.VISIBLE
-            }
-
-            binding.executePendingBindings()
-        }
-    }
-
-    class MatchRequestViewHolder(private val binding: ChatMessageItemMatchRequestBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(
-            chatMessage: ChatMessage,
-            currentUserId: String,
-            onAcceptClick: (ChatMessage) -> Unit,
-            onRejectClick: (ChatMessage) -> Unit
-        ) {
-            binding.acceptButton.setOnClickListener { onAcceptClick(chatMessage) }
-            binding.rejectButton.setOnClickListener { onRejectClick(chatMessage) }
-
-            if (chatMessage.senderId == currentUserId) {
-                binding.matchRequestChatTextBackground.visibility = View.VISIBLE
-                binding.layoutReceivedMessage.visibility = View.GONE
-            } else {
-                binding.matchRequestChatTextBackground.visibility = View.GONE
-                binding.layoutReceivedMessage.visibility = View.VISIBLE
-            }
-
-            binding.executePendingBindings()
-        }
+    // 새로운 메시지 리스트를 설정하고 갱신하는 함수
+    fun submitList(newMessages: List<ChatMessage>) {
+        messages = newMessages
+        notifyDataSetChanged()
     }
 }

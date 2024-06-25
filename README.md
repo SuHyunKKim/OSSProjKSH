@@ -19,7 +19,7 @@
 팀원 | 김수현 | 2019112426 | 산업시스템공학과 | 융합소프트웨어 | kimsteven728@gmail.com         
 팀원 | 오연진 | 2020110869 | 경제학과 | 데이터사이언스소프트웨어 | 2020110869@dgu.ac.kr                
 
-* 지도교수: 융합SW교육원 이길섭 교수님, 박효순 교수님       
+* 지도교수: SW교육원 이길섭 교수님, 박효순 교수님       
 
 ### Team
 |<img src="https://avatars.githubusercontent.com/u/143872214?v=4" width="150" height="150"/>|<img src="https://avatars.githubusercontent.com/u/144208568?v=4" width="150" height="150"/>|<img src="https://avatars.githubusercontent.com/u/144078388?v=4" width="150" height="150"/>|
@@ -59,10 +59,11 @@
     ![매칭목록](https://github.com/CSID-DGU/2024-1-OSSProj-OhYeSu-05/assets/144078388/6b491dff-fba8-4a14-b739-8d97e50e834f)  
 
 - 채팅 기능  
-    ![매칭하기](https://github.com/CSID-DGU/2024-1-OSSProj-OhYeSu-05/assets/144078388/ef11a97d-9769-49d6-928f-3252db3bafd8)  
+    ![채팅하기](https://github.com/CSID-DGU/2024-1-OSSProj-OhYeSu-05/assets/144078388/8afd6c1c-f799-476f-8da2-95eb16c94af0)
 
-- 차단 기능  
-    ![차단하기](https://github.com/CSID-DGU/2024-1-OSSProj-OhYeSu-05/assets/144078388/4b6927f6-164c-4de3-8d21-8bc4ebd89e0d)   
+- 신고 기능  
+    ![신고하기](https://github.com/CSID-DGU/2024-1-OSSProj-OhYeSu-05/assets/144078388/6738ef9a-25a5-4d63-959a-1b0c69db6d12)
+   
   
 - 이외의 구현 기능은 최종보고서 부록에 기재 <br>[최종보고서 부록](https://github.com/CSID-DGU/2024-1-OSSProj-OhYeSu-05/blob/main/Doc/3_3_OSSProj_05_OhYeSu_최종보고서부록.md)
 
@@ -154,19 +155,19 @@
 ## 6. 시작 가이드(사용 방법)
 ***
 
-#### Requirements
+### Requirements
 로컬 환경에서 어플리케이션을 빌드하고 실행하려면 다음이 필요함:
 ```
 * Android Studio
 * MySql 8.0
 * Ngrok 0.81
 ```
-#### Installation
+### Installation
 ```
 > git clone https://github.com/CSID-DGU/2024-1-OSSProj-OhYeSu-05.git Kiri
 > cd Kiri
 ```
-#### Backend
+### Backend
 
 가상환경 생성 및 의존성 패키지 설치 -> DB 구성 -> DB 원격 접속 허용 -> Django에 구성한 DB 정보 입력
 
@@ -227,7 +228,7 @@ DATABASES = {
 
 
 
-#### Frontend
+### Frontend
 Django 서버 주소 외부로 포워딩 -> 포워딩 주소를 API 호출에 사용할 객체가 전달될 주소로 할당
 
 
@@ -257,10 +258,22 @@ object ApiFactory {
 }
 ```
 
-#### Build
+### Build
 ![image](https://github.com/CSID-DGU/2024-1-OSSProj-OhYeSu-05/assets/144208568/8fccba47-025c-452c-972c-326ac2b66646)
 ```
 1. 맨 오른쪽의 망치 모양 버튼 클릭 -> app build 시작
 2. build 완료 후 중간의 재생 버튼 클릭 -> 안드로이드 에뮬레이터 시작
 3. 어플 자동 설치 후 실행 됨
 ```
+
+
+## 7. 시연영상
+![GIFMaker_me](https://github.com/CSID-DGU/2024-1-OSSProj-OhYeSu-05/assets/144208568/668f8582-5e3f-488d-8e5b-5b21f9d17974)
+
+![GIFMaker_me (1)](https://github.com/CSID-DGU/2024-1-OSSProj-OhYeSu-05/assets/144208568/9aeae634-441e-463c-96df-2b01f0ef3140)
+
+선호도 정보 입력 후 매칭 알고리즘 실행 및 결과 반환
+https://www.youtube.com/shorts/2raDkWlSv1c
+
+채팅 및 매칭 신청
+https://www.youtube.com/shorts/YWlupyA0A_I

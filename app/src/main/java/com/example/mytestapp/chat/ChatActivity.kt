@@ -19,10 +19,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.mytestapp.R
 import com.example.mytestapp.adapters.ChatAdapter
 import com.example.mytestapp.entitiy.KiriServicePool
-import com.example.mytestapp.model.request.ChatMessage
 import com.example.mytestapp.model.request.MatchRequest
 import com.example.mytestapp.viewmodel.ChatRoomViewModel
 import com.example.mytestapp.matchmaking.MatchmakingActivity
+import com.example.mytestapp.model.response.ChatMessage
 import com.example.mytestapp.model.response.MatchResponse
 import com.example.mytestapp.websocket.WebSocketManager
 import org.json.JSONObject
@@ -39,11 +39,13 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var imageMenu: ImageView
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var btnBack: Button
+    private lateinit var chatNickname: TextView
     private lateinit var currentUserId: String
     private lateinit var currentUserName: String
     private lateinit var targetUserId: String
     private lateinit var targetUserName: String
     private lateinit var webSocketManager: WebSocketManager
+    private lateinit var chatRoomIdd: String
 
     private val chatRoomViewModel: ChatRoomViewModel by viewModels()
 
@@ -53,6 +55,10 @@ class ChatActivity : AppCompatActivity() {
 
         targetUserId = intent.getStringExtra("targetUserId") ?: "Unknown User"
         targetUserName = intent.getStringExtra("targetUserName") ?: "Unknown User"
+        val chatRoomIdString = intent.getStringExtra("chatRoomId") ?: "-1"
+        val chatRoomId = chatRoomIdString.toIntOrNull() ?: -1
+
+        chatRoomIdd = chatRoomIdString
 
         val sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE)
         currentUserId = sharedPreferences.getString("UserID", "defaultUserId") ?: "defaultUserId"
@@ -65,7 +71,8 @@ class ChatActivity : AppCompatActivity() {
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        chatRoomViewModel.chatMessages.observe(this, Observer { messages ->
+        chatRoomViewModel.chatMessages.observe(this, Observer<List<ChatMessage>> { messages ->
+            Log.d("ChatActivity", "Observed messages: $messages")
             adapter.submitList(messages)
             recyclerView.scrollToPosition(messages.size - 1)
         })
@@ -77,17 +84,18 @@ class ChatActivity : AppCompatActivity() {
         })
 
         webSocketManager = WebSocketManager(
-            onMessageReceived = { message -> runOnUiThread {
-                chatRoomViewModel.addMessage(message)
+            chatRoomId = chatRoomId,
+            onMessageReceived = { messages: List<ChatMessage> -> runOnUiThread {
+                Log.d("ChatActivity", "Received messages: $messages")
+                chatRoomViewModel.addMessages(messages)
             }},
-            onConnectionFailed = { error -> runOnUiThread {
+            onConnectionFailed = { error: String -> runOnUiThread {
                 Toast.makeText(this, "WebSocket 연결 실패: $error", Toast.LENGTH_LONG).show()
                 Log.e("ChatActivity", "웹소켓 연결 실패: $error")
             }}
         )
 
         webSocketManager.connect()
-        chatRoomViewModel.loadMessages(currentUserId, targetUserId)
     }
 
     private fun initializeComponents() {
@@ -97,9 +105,9 @@ class ChatActivity : AppCompatActivity() {
         imageMenu = findViewById(R.id.imageMenu)
         drawerLayout = findViewById(R.id.drawerLayout)
         btnBack = findViewById(R.id.btn_back)
+        chatNickname = findViewById(R.id.chat_nickname)
 
-        val textTitle = findViewById<TextView>(R.id.textTitle)
-        textTitle.text = targetUserName
+        chatNickname.text = targetUserName
     }
 
     private fun setupButtonListeners() {
@@ -150,23 +158,17 @@ class ChatActivity : AppCompatActivity() {
 
     private fun sendMessage(messageText: String) {
         val messageData = ChatMessage(
-            messageId = "", // 서버에서 생성
-            senderId = currentUserId,
-            receiverId = targetUserId,
-            content = messageText,
-            timestamp = "", // 서버에서 생성
-            formattedTimestamp = "", // 서버에서 생성
-            senderName = currentUserName
+            CHistoryID = chatRoomIdd, // 서버에서 생성
+            senderID = currentUserId,
+            receiverID = targetUserId,
+            content = messageText
         )
 
         val jsonObject = JSONObject().apply {
-            put("messageId", messageData.messageId)
-            put("senderId", messageData.senderId)
-            put("receiverId", messageData.receiverId)
+            put("CHistoryID", messageData.CHistoryID)
+            put("senderID", messageData.senderID)
+            put("receiverID", messageData.receiverID)
             put("content", messageData.content)
-            put("timestamp", messageData.timestamp)
-            put("formattedTimestamp", messageData.formattedTimestamp)
-            put("senderName", messageData.senderName)
         }
 
         webSocketManager.sendMessage(jsonObject.toString())
@@ -174,7 +176,7 @@ class ChatActivity : AppCompatActivity() {
 
     // 수락 버튼 클릭 이벤트 처리 메서드
     private fun onAcceptClick(chatMessage: ChatMessage) {
-        val matchRequest = MatchRequest(userId = currentUserId)
+        val matchRequest = MatchRequest(userId = currentUserId, userId2 = targetUserId)
 
         KiriServicePool.matchingService.acceptMatch(matchRequest).enqueue(object :
             Callback<MatchResponse> {
@@ -184,7 +186,7 @@ class ChatActivity : AppCompatActivity() {
                         if (it.success) {
                             sendMatchAcceptedMessage(chatMessage)
                         } else {
-                            showError("매칭 수락에 실패했습니다: ${it.message}")
+                            showError("매칭 수락에 실패했습니다")
                         }
                     }
                 } else {
@@ -201,23 +203,19 @@ class ChatActivity : AppCompatActivity() {
     // 매칭 수락 메시지 전송 메서드
     private fun sendMatchAcceptedMessage(chatMessage: ChatMessage) {
         val messageData = ChatMessage(
-            messageId = "", // 서버에서 생성
-            senderId = currentUserId,
-            receiverId = chatMessage.senderId,
+            CHistoryID = "", // 서버에서 생성
+            senderID = currentUserId,
+            receiverID = chatMessage.senderID,
             content = "매칭 요청이 수락되었습니다.",
-            timestamp = "", // 서버에서 생성
-            formattedTimestamp = "", // 서버에서 생성
-            senderName = currentUserName
+            isMatchRequest = false // 일반 메시지로 전환
         )
 
         val jsonObject = JSONObject().apply {
-            put("messageId", messageData.messageId)
-            put("senderId", messageData.senderId)
-            put("receiverId", messageData.receiverId)
+            put("CHistoryID", messageData.CHistoryID)
+            put("senderID", messageData.senderID)
+            put("receiverID", messageData.receiverID)
             put("content", messageData.content)
-            put("timestamp", messageData.timestamp)
-            put("formattedTimestamp", messageData.formattedTimestamp)
-            put("senderName", messageData.senderName)
+            put("isMatchRequest", messageData.isMatchRequest)
         }
 
         webSocketManager.sendMessage(jsonObject.toString())
@@ -225,7 +223,8 @@ class ChatActivity : AppCompatActivity() {
 
     // 거절 버튼 클릭 이벤트 처리 메서드
     private fun onRejectClick(chatMessage: ChatMessage) {
-        val matchRequest = MatchRequest(userId = currentUserId)
+        val matchRequest = MatchRequest(userId = currentUserId,
+                    userId2 = targetUserId)
 
         KiriServicePool.matchingService.rejectMatch(matchRequest).enqueue(object : Callback<MatchResponse> {
             override fun onResponse(call: Call<MatchResponse>, response: Response<MatchResponse>) {
@@ -234,7 +233,7 @@ class ChatActivity : AppCompatActivity() {
                         if (it.success) {
                             sendMatchRejectedMessage(chatMessage)
                         } else {
-                            showError("매칭 거절에 실패했습니다: ${it.message}")
+                            showError("매칭 거절에 실패했습니다.")
                         }
                     }
                 } else {
@@ -251,28 +250,23 @@ class ChatActivity : AppCompatActivity() {
     // 매칭 거절 메시지 전송 메서드
     private fun sendMatchRejectedMessage(chatMessage: ChatMessage) {
         val messageData = ChatMessage(
-            messageId = "", // 서버에서 생성
-            senderId = currentUserId,
-            receiverId = chatMessage.senderId,
+            CHistoryID = "", // 서버에서 생성
+            senderID = currentUserId,
+            receiverID = chatMessage.senderID,
             content = "매칭 요청이 거절되었습니다.",
-            timestamp = "", // 서버에서 생성
-            formattedTimestamp = "", // 서버에서 생성
-            senderName = currentUserName
+            isMatchRequest = false // 일반 메시지로 전환
         )
 
         val jsonObject = JSONObject().apply {
-            put("messageId", messageData.messageId)
-            put("senderId", messageData.senderId)
-            put("receiverId", messageData.receiverId)
+            put("CHistoryID", messageData.CHistoryID)
+            put("senderID", messageData.senderID)
+            put("receiverID", messageData.receiverID)
             put("content", messageData.content)
-            put("timestamp", messageData.timestamp)
-            put("formattedTimestamp", messageData.formattedTimestamp)
-            put("senderName", messageData.senderName)
+            put("isMatchRequest", messageData.isMatchRequest)
         }
 
         webSocketManager.sendMessage(jsonObject.toString())
     }
-
 
     //추가: 오류 메시지 표시 메서드
     private fun showError(message: String) {
@@ -283,4 +277,7 @@ class ChatActivity : AppCompatActivity() {
         super.onDestroy()
         webSocketManager.disconnect()
     }
+
+
+
 }

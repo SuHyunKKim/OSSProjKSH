@@ -72,7 +72,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'Kiri_prj.wsgi.application'
+# WSGI_APPLICATION = 'Kiri_prj.wsgi.application'
 
 
 # Database
@@ -84,31 +84,31 @@ DATABASES = {
     #     'NAME': BASE_DIR / 'db.sqlite3',
     # }
 
-    "default": {
-
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'ossp_db',
-        'USER': 'admin',
-        'PASSWORD':'98789878',
-        'HOST': 'ossp-db.cj2y4auwm7gh.ap-northeast-2.rds.amazonaws.com',
-        'PORT':'3306',
-        'OPTIONS':{
-            'init_command' : "SET sql_mode='STRICT_TRANS_TABLES'"
-        }
-    }
-
-    #    "default": {
+    # "default": {
     #
-    #        'ENGINE': 'django.db.backends.mysql',
-    #        'NAME': 'qwer',
-    #        'USER': 'root',
-    #        'PASSWORD':'0514',
-    #        'HOST': '127.0.0.1',
-    #        'PORT':'3306',
-    #        'OPTIONS':{
-    #            'init_command' : "SET sql_mode='STRICT_TRANS_TABLES'"
-    #        }
-    #    }
+    #     'ENGINE': 'django.db.backends.mysql',
+    #     'NAME': 'ossp_db',
+    #     'USER': 'admin',
+    #     'PASSWORD':'98789878',
+    #     'HOST': 'ossp-db.cj2y4auwm7gh.ap-northeast-2.rds.amazonaws.com',
+    #     'PORT':'3306',
+    #     'OPTIONS':{
+    #         'init_command' : "SET sql_mode='STRICT_TRANS_TABLES'"
+    #     }
+    # }
+
+       "default": {
+
+           'ENGINE': 'django.db.backends.mysql',
+           'NAME': 'qwer',
+           'USER': 'root',
+           'PASSWORD':'9878',
+           'HOST': '127.0.0.1',
+           'PORT':'3306',
+           'OPTIONS':{
+               'init_command' : "SET sql_mode='STRICT_TRANS_TABLES'"
+           }
+       }
 }
 
 
@@ -162,25 +162,70 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [('127.0.0.1', 6380)],
+            "hosts": [('127.0.0.1', 6379)],
         },
     },
 }
 
 # 로깅 설정 추가
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'file': {
+#             'level': 'DEBUG',
+#             'class': 'logging.FileHandler',
+#             'filename': BASE_DIR / 'debug.log',
+#             'encoding': 'utf-8', # 추후 삭제 필요
+#         },
+#     },
+#     'loggers': {
+#         'django': {
+#             'handlers': ['file'],
+#             'level': 'DEBUG',
+#             'propagate': True,
+#         },
+#     },
+# }
+
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'console': {
+#             'level': 'WARNING',
+#             'class': 'logging.StreamHandler',
+#         },
+#     },
+#     'loggers': {
+#         'django': {
+#             'handlers': ['console'],
+#             'level': 'WARNING',
+#             'propagate': True,
+#         },
+#     },
+# }
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'debug.log',
+        'console': {
+            'class': 'logging.StreamHandler',
         },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'WARNING',
     },
     'loggers': {
         'django': {
-            'handlers': ['file'],
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': True,
+        },
+        'channels': {
+            'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': True,
         },

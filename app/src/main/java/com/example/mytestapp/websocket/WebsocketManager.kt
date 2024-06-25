@@ -1,86 +1,78 @@
 package com.example.mytestapp.websocket
 
-import android.os.Handler
-import android.os.Looper
-import com.example.mytestapp.model.request.ChatMessage
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.WebSocket
-import okhttp3.WebSocketListener
+import android.util.Log
+import com.example.mytestapp.model.response.ChatMessage
+import okhttp3.*
+import okio.ByteString
+import org.json.JSONArray
 import org.json.JSONObject
 
 class WebSocketManager(
-    private val onMessageReceived: (ChatMessage) -> Unit,
+    private val chatRoomId: Int?,
+    private val onMessageReceived: (List<ChatMessage>) -> Unit,
     private val onConnectionFailed: (String) -> Unit
 ) {
     private lateinit var webSocket: WebSocket
     private val client = OkHttpClient()
-    private val handler = Handler(Looper.getMainLooper())
-    private var isConnected = false
-
-    companion object {
-        private const val NORMAL_CLOSURE_STATUS = 1000
-        private const val WEBSOCKET_URL = "wss://13.124.159.83/ws/chat/"
-    }
-
+    private val serverUrl = "ws://6dcc-128-134-0-90.ngrok-free.app/ws/chat/$chatRoomId/"
     fun connect() {
-        val request = Request.Builder().url(WEBSOCKET_URL).build()
+        val request = Request.Builder().url(serverUrl).build()
         webSocket = client.newWebSocket(request, object : WebSocketListener() {
-            override fun onOpen(webSocket: WebSocket, response: okhttp3.Response) {
-                isConnected = true
+            override fun onOpen(webSocket: WebSocket, response: Response) {
+                Log.d("WebSocket", "Connected to server")
+                // 웹소켓 연결 성공 시 초기 메시지 요청
+                val initMessage = JSONObject().apply {
+                    put("type", "initial_load")
+                    put("chatRoomId", chatRoomId)
+                }
+                webSocket.send(initMessage.toString())
             }
-
             override fun onMessage(webSocket: WebSocket, text: String) {
-                handler.post {
-                    val jsonObject = JSONObject(text)
-                    val chatMessage = ChatMessage(
-                        messageId = jsonObject.getString("messageId"),
-                        receiverId = jsonObject.getString("receiverId"),
-                        senderId = jsonObject.getString("senderId"),
-                        content = jsonObject.getString("content"),
-                        timestamp = jsonObject.getString("timestamp"),
-                        formattedTimestamp = jsonObject.getString("formattedTimestamp"),
-                        senderName = jsonObject.getString("senderName")
-                    )
-                    onMessageReceived(chatMessage)
-                }
+                handleReceivedMessage(text)
             }
-
-            override fun onFailure(webSocket: WebSocket, t: Throwable, response: okhttp3.Response?) {
-                isConnected = false
-                handler.post {
-                    onConnectionFailed(t.message ?: "Unknown error")
-                }
-                reconnect()
+            override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
+                handleReceivedMessage(bytes.utf8())
             }
-
-            override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
-                webSocket.close(NORMAL_CLOSURE_STATUS, null)
-            }
-
-            override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
-                isConnected = false
+            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                onConnectionFailed(t.message ?: "Unknown error")
             }
         })
     }
-
-    private fun reconnect() {
-        handler.postDelayed({
-            if (!isConnected) {
-                connect()
+    private fun handleReceivedMessage(text: String) {
+        try {
+            val jsonObject = JSONObject(text)
+            val messageType = jsonObject.optString("type")
+            if (messageType == "initial_messages") {
+                val messages = mutableListOf<ChatMessage>()
+                val jsonArray = jsonObject.getJSONArray("messages")
+                for (i in 0 until jsonArray.length()) {
+                    val messageObject = jsonArray.getJSONObject(i)
+                    val chatMessage = ChatMessage(
+                        CHistoryID = messageObject.optString("CHistoryID", ""),
+                        senderID = messageObject.optString("senderID", ""),
+                        receiverID = messageObject.optString("receiverID", ""),
+                        content = messageObject.optString("content", "")
+                    )
+                    messages.add(chatMessage)
+                }
+                onMessageReceived(messages)
+            } else {
+                val chatMessage = ChatMessage(
+                    CHistoryID = jsonObject.optString("CHistoryID", ""),
+                    senderID = jsonObject.optString("senderID", ""),
+                    receiverID = jsonObject.optString("receiverID", ""),
+                    content = jsonObject.optString("content", "")
+                )
+                onMessageReceived(listOf(chatMessage))
             }
-        }, 5000)
+        } catch (e: Exception) {
+            onConnectionFailed(e.message ?: "Error parsing message")
+        }
     }
-
     fun sendMessage(message: String) {
-        if (isConnected) {
-            webSocket.send(message)
-        }
+        webSocket.send(message)
     }
-
     fun disconnect() {
-        if (isConnected) {
-            webSocket.close(NORMAL_CLOSURE_STATUS, "Goodbye")
-        }
+        webSocket.close(1000, "Closing connection")
     }
 }

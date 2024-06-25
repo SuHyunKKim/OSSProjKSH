@@ -16,9 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from Kiri_app import routing
 
 # KSH: api urls.py를 사용하기 위해 include 추가
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("",include('Kiri_app.urls')) # KSH: Kiri_app의 urls.py를 사용
+    path("",include('Kiri_app.urls')), #api/urls.py 사용)
+    path("",include(routing.websocket_urlpatterns))
 ]
+

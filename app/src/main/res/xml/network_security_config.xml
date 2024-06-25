@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
     <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">ec2-13-124-159-83.ap-northeast-2.compute.amazonaws.com</domain>
+        <domain includeSubdomains="true">6dcc-128-134-0-90.ngrok-free.app</domain>
+        <domain includeSubdomains="true">ca13-128-134-0-90.ngrok-free.app</domain>
     </domain-config>
 </network-security-config>

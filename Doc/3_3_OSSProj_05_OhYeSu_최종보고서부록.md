@@ -62,6 +62,8 @@
     <br>
 - 메인 화면 기능  
     ![메인](https://github.com/CSID-DGU/2024-1-OSSProj-OhYeSu-05/assets/144078388/a85f5217-1250-4b30-b1a2-797801def00e)
+- 차단 기능
+- ![차단하기](https://github.com/CSID-DGU/2024-1-OSSProj-OhYeSu-05/assets/144078388/4b6927f6-164c-4de3-8d21-8bc4ebd89e0d)
 
 
 <br></br>

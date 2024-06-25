@@ -39,7 +39,7 @@ class ChatRoom(models.Model): #ChatHistory 역할
     # AccessedTime = models.DateTimeField(auto_now_add=True) # 채팅방 메세지 시간
 
     def __str__(self):
-        return f"ChatRoom between {self.user1.username} and {self.user2.username}"
+        return f"ChatRoom {self.HistoryID}"
 
 # KSH : 채팅 모델 정의
 class Chat(models.Model): #Message 역할
